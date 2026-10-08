@@ -1065,6 +1065,53 @@ body {
 }
 
 /* ==========================================================================
+   KIOSK / NOC FULLSCREEN MODE
+   ========================================================================== */
+body.kiosk-mode .sidebar {
+  display: none !important;
+}
+
+body.kiosk-mode .topbar {
+  opacity: 0.15;
+  transition: opacity 0.3s ease;
+}
+
+body.kiosk-mode .topbar:hover {
+  opacity: 1;
+}
+
+.kiosk-exit-pill {
+  position: fixed;
+  top: 10px;
+  right: 20px;
+  background: rgba(17, 18, 23, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  display: none;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  z-index: 100;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.kiosk-exit-pill:hover {
+  background: var(--color-grafana-orange);
+  color: #fff;
+  border-color: var(--color-grafana-orange);
+}
+
+body.kiosk-mode .kiosk-exit-pill {
+  display: flex;
+}
+
+/* ==========================================================================
    RESPONSIVE DESIGN
    ========================================================================== */
 @media (max-width: 1400px) {
@@ -1081,3 +1128,4 @@ body {
     grid-column: span 1;
   }
 }
+

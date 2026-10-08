@@ -87,6 +87,12 @@
           <span id="realtime-clock">--:--:--</span>
         </div>
 
+        <!-- Kiosk / NOC Fullscreen Button -->
+        <button id="btn-kiosk-toggle" class="btn-help" title="Toggle Kiosk / NOC Mode (F)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+          <span id="kiosk-btn-label">Kiosk (F)</span>
+        </button>
+
         <!-- Terminal CLI Button -->
         <button id="btn-terminal-toggle" class="btn-help" title="Open Interactive CLI Console (` or 'term')">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
@@ -100,6 +106,12 @@
         </button>
       </div>
     </header>
+
+    <!-- Floating Kiosk Exit Button (Visible only in Kiosk Mode) -->
+    <div id="kiosk-exit-pill" class="kiosk-exit-pill" title="Exit Kiosk Mode (F or Esc)">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>
+      <span>Exit Kiosk (F)</span>
+    </div>
 
     <!-- Dashboard Content Body -->
     <main class="dashboard-content">
@@ -455,6 +467,11 @@
               <td><span class="shortcut-key">app2u</span></td>
               <td>Restore <strong>App 2</strong> to Optimal Baseline (Green)</td>
               <td><button class="btn-action btn-rest" data-app="app2" data-action="HEALTHY">Restore</button></td>
+            </tr>
+            <tr>
+              <td><span class="shortcut-key">F</span></td>
+              <td>Toggle Kiosk / NOC Fullscreen Mode (collapse sidebar & chrome)</td>
+              <td><button class="btn-action btn-rest" id="btn-modal-kiosk" style="background: rgba(115, 191, 105, 0.2); color: #73bf69; border-color: rgba(115, 191, 105, 0.45);">Toggle Kiosk</button></td>
             </tr>
             <tr>
               <td><span class="shortcut-key">term</span> / <span class="shortcut-key">&grave;</span></td>

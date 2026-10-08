@@ -193,4 +193,66 @@ function setupModalAndControls(metricsEngine) {
       window.dispatchEvent(new CustomEvent("toggle-terminal"));
     });
   }
+
+  // Kiosk / Fullscreen toggle button wiring
+  const btnKiosk = document.getElementById("btn-kiosk-toggle");
+  const btnModalKiosk = document.getElementById("btn-modal-kiosk");
+  const kioskExitPill = document.getElementById("kiosk-exit-pill");
+
+  const toggleKiosk = () => {
+    const isKiosk = document.body.classList.toggle("kiosk-mode");
+    const kioskBtnLabel = document.getElementById("kiosk-btn-label");
+    if (kioskBtnLabel) {
+      kioskBtnLabel.textContent = isKiosk ? "Exit Kiosk (F)" : "Kiosk (F)";
+    }
+
+    // Try requesting / exiting real browser fullscreen
+    if (isKiosk) {
+      if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      }
+    } else {
+      if (document.fullscreenElement && document.exitFullscreen) {
+        document.exitFullscreen().catch(() => {});
+      }
+    }
+
+    // Trigger chart resize recalculation
+    window.dispatchEvent(new Event("resize"));
+  };
+
+  const exitKiosk = () => {
+    if (document.body.classList.contains("kiosk-mode")) {
+      document.body.classList.remove("kiosk-mode");
+      const kioskBtnLabel = document.getElementById("kiosk-btn-label");
+      if (kioskBtnLabel) kioskBtnLabel.textContent = "Kiosk (F)";
+      if (document.fullscreenElement && document.exitFullscreen) {
+        document.exitFullscreen().catch(() => {});
+      }
+      window.dispatchEvent(new Event("resize"));
+    }
+  };
+
+  if (btnKiosk) btnKiosk.addEventListener("click", toggleKiosk);
+  if (btnModalKiosk) {
+    btnModalKiosk.addEventListener("click", () => {
+      closeModal();
+      toggleKiosk();
+    });
+  }
+  if (kioskExitPill) kioskExitPill.addEventListener("click", exitKiosk);
+
+  window.addEventListener("toggle-kiosk-mode", toggleKiosk);
+  window.addEventListener("exit-kiosk-mode", exitKiosk);
+
+  // Sync state if user exits via browser ESC key from native fullscreen
+  document.addEventListener("fullscreenchange", () => {
+    if (!document.fullscreenElement && document.body.classList.contains("kiosk-mode")) {
+      document.body.classList.remove("kiosk-mode");
+      const kioskBtnLabel = document.getElementById("kiosk-btn-label");
+      if (kioskBtnLabel) kioskBtnLabel.textContent = "Kiosk (F)";
+      window.dispatchEvent(new Event("resize"));
+    }
+  });
 }
+

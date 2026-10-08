@@ -36,6 +36,13 @@ class KeyboardListener {
         return;
       }
 
+      // Shortcut to toggle Kiosk / NOC Fullscreen mode ('f' or 'F')
+      if (e.key === "f" || e.key === "F") {
+        e.preventDefault();
+        window.dispatchEvent(new CustomEvent("toggle-kiosk-mode"));
+        return;
+      }
+
       // Shortcut to open/close help cheat sheet ('?' or 'Escape')
       if (e.key === "?" || (e.shiftKey && e.key === "/")) {
         e.preventDefault();
@@ -46,6 +53,7 @@ class KeyboardListener {
       if (e.key === "Escape") {
         window.dispatchEvent(new CustomEvent("close-cheat-modal"));
         window.dispatchEvent(new CustomEvent("close-terminal"));
+        window.dispatchEvent(new CustomEvent("exit-kiosk-mode"));
         return;
       }
 
