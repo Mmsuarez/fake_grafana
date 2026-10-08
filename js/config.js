@@ -46,7 +46,7 @@ const APP_CONFIG = {
   // ----------------------------------------------------------------------------
   app2: {
     id: "app2",
-    name: "Portal Fortigate40F - Auth & Customer",                             // <-- CHANGE APP 2 NAME HERE
+    name: "Portal Fortigate40F",                             // <-- CHANGE APP 2 NAME HERE
     shortCode: "FG40F-PORTAL",                                   // Short acronym / tag
     description: "OAuth2 authentication, user sessions & web portal", // <-- APP 2 DESCRIPTION
     host: "srv-auth-portal-02.prod.internal",                   // Simulated hostname
