@@ -45,9 +45,15 @@ Type these keystrokes anywhere on the dashboard window:
 Open the console with `` ` `` or `term`:
 
 - `app1 status` / `app2 status`: Streams diagnostic checks reflecting the real-time state (Operational, Degraded, or Critical).
-- `app1 fix1` .. `app1 fix4` *(e.g. `app1 fix1 --force restart`)*: Runs simulation remediation script (does not alter dashboard metrics until `app1u` is run).
-- `app1 -fix1` .. `app1 -fix4`: Simulates a remediation attempt that **fails**.
-- `app1d` / `app1k` / `app1u`: Change dashboard state directly from the CLI.
+- **Thematic Fixes** (accepts any custom arguments, e.g. `app1 fix1 --force`):
+  - `app1 fix1`: 🐳 **Docker Rebuild**: Pulls image layers by hash and spins up container step-by-step (`[1/6]` to `[6/6]`).
+  - `app1 fix2`: ⚙️ **Hotfix Compilation**: Compiles Go/Rust modules with a realistic 1.7s build micropause & zero-downtime hot-swap.
+  - `app1 fix3`: 🗄️ **Database Pool Purge**: Drains saturated PgBouncer pool (99% full) & purges 14k Redis keys with reindex delay.
+  - `app1 fix4`: ☸️ **Kubernetes Rollout**: `kubectl rollout restart deployment` with live pod replica counting (`1/4` to `4/4 ready`).
+- `app1 -fix1` .. `app1 -fix4`: Simulates a remediation attempt that **fails** (e.g. OOMKilled, compiler deadlock, lock contention, PDB violation).
+- `app1u` / `app2u`: Restores dashboard telemetry metrics to Healthy (Operational).
+- `app1d` / `app2d`: Degrades dashboard metrics to Warning (Degraded).
+- `app1k` / `app2k`: Triggers Critical Outage on dashboard metrics.
 - `clear`: Clear console output.
 - `help`: View commands cheat sheet.
 - `exit`: Close console modal.

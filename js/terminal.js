@@ -240,70 +240,194 @@ class TerminalConsole {
   }
 
   // ----------------------------------------------------------------------------
-  // FIX COMMAND GENERATOR (fix1..4, and -fix1..4 failure)
+  // FIX COMMAND ROUTER (4 UNIQUE THEMATIC FIXES)
   // ----------------------------------------------------------------------------
   _runFixCommand(appId, fixNum, willFail, rawCmd) {
     const app = this.metricsEngine.apps[appId];
     if (!app) return;
 
-    const name = app.config.name;
-
-    const fixDescriptions = {
-      1: "Restarting pod container instances & flushing in-memory cache",
-      2: "Rolling back deployment revision to previous known-good baseline",
-      3: "Scaling horizontal pod autoscaler (HPA) & clearing network queue",
-      4: "Applying hotfix patch to threadpool & reloading configuration"
-    };
-
-    const actionText = fixDescriptions[fixNum] || "Applying automated cluster remediation";
-
-    const lines = [
-      `<span class="term-cyan">[EXEC] Target: ${name} (ID: ${appId})</span>`,
-      `<span class="term-cyan">[TASK] ${actionText}...</span>`,
-      `<span class="term-gray">[DEBUG] Executing command: "${this._escapeHtml(rawCmd)}"</span>`,
-      `<span class="term-gray">[STEP 1/4] Draining current socket connections...</span>`,
-      `<span class="term-gray">[STEP 2/4] Verifying cluster state & pod replica manifests...</span>`
-    ];
-
-    if (willFail) {
-      // SIMULATED FAILURE (when '-' was used, like "app1 -fix1")
-      lines.push(
-        `<span class="term-gray">[STEP 3/4] Deploying remediation hook...</span>`,
-        `<span class="term-red">[ERROR] Lock acquisition failed: Resource deadlock detected on node daemon.</span>`,
-        `<span class="term-red">[FAIL] Rollback aborted: Checksum signature verification mismatch!</span>`,
-        `<span class="term-red">[ERROR] Container crashed during patch restart (ExitCode 137).</span>`,
-        `<span class="term-red">[FAIL] Remediation failed! Service remains in degraded/critical state.</span>`
-      );
-      this._streamLines(lines);
-    } else {
-      // SUCCESSFUL REPAIR SIMULATION (Does not alter dashboard telemetry state)
-      lines.push(
-        `<span class="term-gray">[STEP 3/4] Applying configuration changes & spinning up replacement pods...</span>`,
-        `<span class="term-green">[OK] New container pods initialized and bound to endpoints.</span>`,
-        `<span class="term-gray">[STEP 4/4] Running synthetic health checks...</span>`,
-        `<span class="term-green">[OK] Local probe /healthz returning 200 OK (32ms).</span>`,
-        `<span class="term-green">[OK] Error rate normalized locally.</span>`,
-        `<span class="term-green">[SUCCESS] Fix script executed successfully for ${name}.</span>`
-      );
-
-      this._streamLines(lines);
+    let lines = [];
+    if (fixNum === "1") {
+      lines = this._getFix1Docker(app, willFail, rawCmd);
+    } else if (fixNum === "2") {
+      lines = this._getFix2Compile(app, willFail, rawCmd);
+    } else if (fixNum === "3") {
+      lines = this._getFix3Database(app, willFail, rawCmd);
+    } else if (fixNum === "4") {
+      lines = this._getFix4K8s(app, willFail, rawCmd);
     }
+
+    this._streamLines(lines);
   }
 
   // ----------------------------------------------------------------------------
-  // Animated typewriter line streamer
+  // FIX 1: Docker Container Rebuild & Layer Spin-up
   // ----------------------------------------------------------------------------
-  _streamLines(lines, onComplete) {
-    let index = 0;
-    const interval = setInterval(() => {
-      if (index < lines.length) {
-        this._printLine(lines[index]);
-        index++;
-      } else {
-        clearInterval(interval);
-        if (onComplete) onComplete();
+  _getFix1Docker(app, willFail, rawCmd) {
+    const name = app.config.name;
+    const shortCode = app.config.shortCode.toLowerCase();
+    const port = app.config.ip.split(":")[1] || "8080";
+
+    const lines = [
+      `<span class="term-cyan">[DOCKER] Target Service: ${name}</span>`,
+      `<span class="term-gray">[DEBUG] Command: "${this._escapeHtml(rawCmd)}"</span>`,
+      `<span class="term-cyan">[DOCKER] Pulling image: registry.internal/workloads/${shortCode}:v2.14.3-hotfix</span>`,
+      `<span class="term-gray">72a6902112ac: Pull complete [14.2 MB / 14.2 MB]</span>`,
+      `<span class="term-gray">bd64903a11d2: Pull complete [8.1 MB / 8.1 MB]</span>`,
+      `<span class="term-gray">9f120aa841c0: Extracting [========================&gt;] 100%</span>`,
+      `<span class="term-gray">[1/6] Creating isolated bridge network veth-prod-${shortCode}... [DONE]</span>`,
+      `<span class="term-gray">[2/6] Attaching volume mounts (/var/log, /etc/ssl/certs)... [DONE]</span>`,
+      `<span class="term-gray">[3/6] Starting container daemon (PID 18420)... [DONE]</span>`
+    ];
+
+    if (willFail) {
+      lines.push(
+        `<span class="term-gray">[4/6] Executing entrypoint probe /healthcheck.sh...</span>`,
+        `<span class="term-red">[ERROR] Container crashed: Exit code 137 (OOMKilled).</span>`,
+        `<span class="term-red">[FAIL] Healthcheck probe failed: Connection refused 127.0.0.1:${port}</span>`,
+        `<span class="term-red">[FAIL] Docker container entered CrashLoopBackOff. Remediation failed!</span>`
+      );
+    } else {
+      lines.push(
+        `<span class="term-gray">[4/6] Executing entrypoint probe /healthcheck.sh... [OK]</span>`,
+        `<span class="term-gray">[5/6] Registering dynamic IP with ingress reverse-proxy... [DONE]</span>`,
+        `<span class="term-gray">[6/6] Traffic route activated. Container status: Up 3 seconds (healthy).</span>`,
+        `<span class="term-green">[SUCCESS] Docker container rebuild complete. Service listening on port ${port}.</span>`
+      );
+    }
+    return lines;
+  }
+
+  // ----------------------------------------------------------------------------
+  // FIX 2: Code Hotfix Patch & Compiler with Micropause
+  // ----------------------------------------------------------------------------
+  _getFix2Compile(app, willFail, rawCmd) {
+    const name = app.config.name;
+    const shortCode = app.config.shortCode.toLowerCase();
+
+    const lines = [
+      `<span class="term-cyan">[HOTFIX] Applying live source patch to: ${name}</span>`,
+      `<span class="term-gray">[DEBUG] Command: "${this._escapeHtml(rawCmd)}"</span>`,
+      `<span class="term-gray">[GIT] Applying git diff hotfix/mem-leak-4a8f90b (3 files changed, 48 insertions(+), 12 deletions(-))</span>`,
+      `<span class="term-cyan">[COMPILER] Invoking build toolchain: go build -tags=production -v ./cmd/...</span>`,
+      `<span class="term-gray">[COMPILER] Compiling package: internal/worker/threadpool.go...</span>`,
+      `<span class="term-gray">[COMPILER] Compiling package: internal/net/circuit_breaker.go...</span>`,
+      {
+        html: `<span class="term-yellow">[COMPILING] Building runtime dependencies & optimizing byte-code [84/104 modules]...</span>`,
+        delay: 1700 // Realistic 1.7 second compilation micropause!
       }
-    }, 45); // 45ms between lines for realistic fast CLI output
+    ];
+
+    if (willFail) {
+      lines.push(
+        `<span class="term-red">[ERROR] fatal: cyclic dependency detected in internal/worker/threadpool.go:142</span>`,
+        `<span class="term-red">[FAIL] Build terminated with exit code 2. Binary not generated.</span>`,
+        `<span class="term-red">[FAIL] Hotfix patch compilation failed! Existing binary left untouched.</span>`
+      );
+    } else {
+      lines.push(
+        `<span class="term-gray">[COMPILER] Linking shared binary: /opt/bin/${shortCode}-server [OK - 34.2 MB]</span>`,
+        `<span class="term-gray">[HOTSWAP] Sending SIGHUP signal to master process PID 4821...</span>`,
+        `<span class="term-green">[OK] Zero-downtime socket migration completed without dropped packets.</span>`,
+        `<span class="term-green">[SUCCESS] Hotfix binary compiled and swapped into active worker process.</span>`
+      );
+    }
+    return lines;
+  }
+
+  // ----------------------------------------------------------------------------
+  // FIX 3: Database Connection Pool Purge & Cache Synchronization
+  // ----------------------------------------------------------------------------
+  _getFix3Database(app, willFail, rawCmd) {
+    const name = app.config.name;
+
+    const lines = [
+      `<span class="term-cyan">[DB-MAINT] Database pool & cache remediation routine for: ${name}</span>`,
+      `<span class="term-gray">[DEBUG] Command: "${this._escapeHtml(rawCmd)}"</span>`,
+      `<span class="term-gray">[DB] Connecting to PgBouncer pool: psql://pg-cluster.prod.internal:6432/main</span>`,
+      `<span class="term-yellow">[DB] Pool inspection: 254/256 connections active (99.2% saturation).</span>`,
+      `<span class="term-gray">[PURGE] Terminating 184 idle-in-transaction zombie worker backends...</span>`,
+      `<span class="term-gray">[REDIS] Evicting stale session keys from cache cluster (14,290 keys purged)...</span>`,
+      {
+        html: `<span class="term-yellow">[INDEX] Executing REINDEX TABLE CONCURRENTLY transactions_audit...</span>`,
+        delay: 1300 // Database maintenance micropause!
+      }
+    ];
+
+    if (willFail) {
+      lines.push(
+        `<span class="term-red">[ERROR] deadlock detected while attempting to acquire ExclusiveLock on table 'transactions_audit'</span>`,
+        `<span class="term-red">[FAIL] Statement timeout: Query canceled after 5000ms.</span>`,
+        `<span class="term-red">[FAIL] Database cleanup failed! Pool connections remained locked.</span>`
+      );
+    } else {
+      lines.push(
+        `<span class="term-gray">[DB] Buffer cache hit ratio restored to 99.4%.</span>`,
+        `<span class="term-green">[OK] Active connection pool normalized: 18/256 slots in use.</span>`,
+        `<span class="term-green">[OK] Replication lag across read-replicas: 0.02ms (nominal).</span>`,
+        `<span class="term-green">[SUCCESS] Database pool drained, deadlocks cleared, and cache synchronized.</span>`
+      );
+    }
+    return lines;
+  }
+
+  // ----------------------------------------------------------------------------
+  // FIX 4: Kubernetes Rolling Restart & Pod Eviction
+  // ----------------------------------------------------------------------------
+  _getFix4K8s(app, willFail, rawCmd) {
+    const name = app.config.name;
+    const shortCode = app.config.shortCode.toLowerCase();
+    const k8sDeployment = `${shortCode}-deployment`;
+
+    const lines = [
+      `<span class="term-cyan">[K8S] Initiating Kubernetes rolling restart for: ${name}</span>`,
+      `<span class="term-gray">[DEBUG] Command: "${this._escapeHtml(rawCmd)}"</span>`,
+      `<span class="term-gray">[K8S] kubectl rollout restart deployment/${k8sDeployment} -n production</span>`,
+      `<span class="term-gray">[K8S] deployment.apps/${k8sDeployment} restarted</span>`,
+      `<span class="term-gray">[K8S] Cordoning tainted worker node ip-10-240-12-44.internal... [OK]</span>`,
+      `<span class="term-gray">[K8S] Evicting terminating pod ${k8sDeployment}-7b89d4-xk9z...</span>`
+    ];
+
+    if (willFail) {
+      lines.push(
+        `<span class="term-red">[ERROR] Error from server (Forbidden): PodDisruptionBudget '${shortCode}-pdb' is violated.</span>`,
+        `<span class="term-red">[FAIL] Cannot evict pod: minimum available replicas threshold breached.</span>`,
+        `<span class="term-red">[FAIL] Rollout stuck at 1/4 replicas. Manual cluster intervention required.</span>`
+      );
+    } else {
+      lines.push(
+        `<span class="term-gray">[K8S] Waiting for deployment rollout: 0 of 4 updated replicas are available...</span>`,
+        `<span class="term-gray">[K8S] pod/${k8sDeployment}-8c11e2-mm4q: ContainerCreating -&gt; Running [OK]</span>`,
+        `<span class="term-gray">[K8S] Waiting for deployment rollout: 1 of 4 updated replicas are available...</span>`,
+        `<span class="term-gray">[K8S] pod/${k8sDeployment}-8c11e2-k9lp: ContainerCreating -&gt; Running [OK]</span>`,
+        `<span class="term-gray">[K8S] Waiting for deployment rollout: 3 of 4 updated replicas are available...</span>`,
+        `<span class="term-gray">[K8S] pod/${k8sDeployment}-8c11e2-z7tw: ContainerCreating -&gt; Running [OK]</span>`,
+        `<span class="term-green">[OK] deployment "${k8sDeployment}" successfully rolled out (4/4 replicas ready).</span>`,
+        `<span class="term-green">[SUCCESS] Kubernetes pod eviction & rolling replacement completed successfully.</span>`
+      );
+    }
+    return lines;
+  }
+
+  // ----------------------------------------------------------------------------
+  // Asynchronous Streamer with Delay/Micropause Support
+  // ----------------------------------------------------------------------------
+  async _streamLines(lines, onComplete) {
+    this.isBusy = true;
+    for (const item of lines) {
+      if (typeof item === "string") {
+        this._printLine(item);
+        await new Promise(r => setTimeout(r, 42));
+      } else if (item && typeof item === "object") {
+        if (item.html) {
+          this._printLine(item.html);
+        }
+        const delay = item.delay !== undefined ? item.delay : 42;
+        await new Promise(r => setTimeout(r, delay));
+      }
+    }
+    this.isBusy = false;
+    if (onComplete) onComplete();
   }
 
   _printHelp() {
@@ -311,10 +435,10 @@ class TerminalConsole {
       `<span class="term-cyan">=== CLUSTER CLI DIAGNOSTIC CONSOLE ===</span>`,
       `Available commands:`,
       `  <span class="term-yellow">app1 status</span> / <span class="term-yellow">app2 status</span>     Check real-time health and diagnostic logs`,
-      `  <span class="term-yellow">app1 fix1 [args...]</span>            Execute Fix 1 script (Pod restart & cache flush)`,
-      `  <span class="term-yellow">app1 fix2 [args...]</span>            Execute Fix 2 script (Revision rollback)`,
-      `  <span class="term-yellow">app1 fix3 [args...]</span>            Execute Fix 3 script (HPA autoscale & queue drain)`,
-      `  <span class="term-yellow">app1 fix4 [args...]</span>            Execute Fix 4 script (Threadpool hotfix patch)`,
+      `  <span class="term-yellow">app1 fix1 [args...]</span>            🐳 Fix 1: Docker rebuild, layer pull & step counter`,
+      `  <span class="term-yellow">app1 fix2 [args...]</span>            ⚙️ Fix 2: Code hotfix patch & compilation with micropause`,
+      `  <span class="term-yellow">app1 fix3 [args...]</span>            🗄️ Fix 3: Database pool purge & Redis cache sync`,
+      `  <span class="term-yellow">app1 fix4 [args...]</span>            ☸️ Fix 4: Kubernetes rolling restart & pod eviction`,
       `  <span class="term-yellow">app1 -fix1</span> .. <span class="term-yellow">-fix4</span>          Simulate fix attempt with failure (with '-' sign)`,
       `  <span class="term-yellow">app1u</span> / <span class="term-yellow">app2u</span>                     Recover dashboard telemetry to Healthy (Operational)`,
       `  <span class="term-yellow">app1d</span> / <span class="term-yellow">app2d</span>                     Degrade dashboard telemetry to Warning (Degraded)`,
