@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grafana - Production System Health</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <!-- Grafana SVG Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%23f05a28%22/><circle cx=%2240%22 cy=%2245%22 r=%2218%22 fill=%22%23111217%22/></svg>">
+</head>
+<body>
+
+  <!-- ========================================================================
+       LEFT SIDEBAR (Grafana Authentic Style)
+       ======================================================================== -->
+  <aside class="sidebar">
+    <div class="sidebar-logo" title="Grafana Monitor">
+      <!-- Grafana Icon -->
+      <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="20" cy="20" r="18" fill="#F05A28"/>
+        <path d="M14 18C14 15.79 15.79 14 18 14H24C26.21 14 28 15.79 28 18V22C28 24.21 26.21 26 24 26H18C15.79 26 14 24.21 14 22V18Z" fill="#111217"/>
+        <circle cx="24" cy="18" r="2.5" fill="#F05A28"/>
+      </svg>
+    </div>
+
+    <nav class="sidebar-nav">
+      <!-- Dashboards -->
+      <div class="nav-item active" title="Dashboards">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      </div>
+      <!-- Explore -->
+      <div class="nav-item" title="Explore / Prometheus Metrics">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </div>
+      <!-- Alerting -->
+      <div class="nav-item" title="Alerting & Incidents">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <!-- Configuration -->
+      <div class="nav-item" title="Configuration">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ========================================================================
+       MAIN WRAPPER
+       ======================================================================== -->
+  <div class="main-wrapper">
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="breadcrumbs">
+        <span>Home</span>
+        <span>/</span>
+        <span>Dashboards</span>
+        <span>/</span>
+        <span class="crumb-active">Workloads Monitoring</span>
+      </div>
+
+      <div class="topbar-center">
+        <div class="search-box">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <span>Search or filter metrics...</span>
+          <kbd>Ctrl+K</kbd>
+        </div>
+      </div>
+
+      <div class="topbar-actions">
+        <!-- Live status -->
+        <div class="badge-live">
+          <span class="pulse-dot"></span>
+          <span>LIVE</span>
+        </div>
+
+        <!-- Time Picker -->
+        <div class="time-range-picker" title="Time range selection">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span>Last 15m</span>
+        </div>
+
+        <!-- Realtime Clock -->
+        <div class="time-range-picker" style="font-family: var(--font-mono); font-size: 11px;">
+          <span id="realtime-clock">--:--:--</span>
+        </div>
+
+        <!-- Terminal CLI Button -->
+        <button id="btn-terminal-toggle" class="btn-help" title="Open Interactive CLI Console (` or 'term')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+          <span>CLI Console (&grave;)</span>
+        </button>
+
+        <!-- Simulation Cheat Sheet Button -->
+        <button id="btn-help-toggle" class="btn-help" title="View keyboard simulation shortcuts">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <span>Shortcuts (?)</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Dashboard Content Body -->
+    <main class="dashboard-content">
+
+      <!-- Dashboard Title Row -->
+      <section class="dashboard-header-row">
+        <div class="dashboard-title">
+          <h1 id="dashboard-title-text">Production System Health / Core Workloads</h1>
+          <p>Continuous real-time telemetry monitoring for distributed microservices.</p>
+        </div>
+        <div class="cluster-tags">
+          <span class="cluster-tag" id="cluster-tag">k8s-prod-us-east-01</span>
+          <span class="cluster-tag" id="env-tag">PRODUCTION</span>
+          <span class="cluster-tag" style="color: var(--color-green);">Scrape: 1.5s</span>
+        </div>
+      </section>
+
+      <!-- App Status Overview Cards (App 1 & App 2) -->
+      <section class="apps-summary-grid">
+
+        <!-- APPLICATION 1 CARD -->
+        <article class="app-card status-healthy" id="app1-card">
+          <div class="app-card-top">
+            <div class="app-identity">
+              <div class="app-name-row">
+                <h2 id="app1-title">Payments Core API</h2>
+                <span class="app-badge-code" id="app1-badge">PAY-API</span>
+              </div>
+              <p class="app-desc" id="app1-desc">Transaction processing & payment settlement gateway</p>
+              <div class="app-host-info">
+                <span id="app1-host">srv-payments-node-01.prod.internal</span>
+                <span id="app1-ip">10.240.12.44:8080</span>
+              </div>
+            </div>
+            <div id="app1-status-badge" class="status-badge healthy">
+              <span class="pulse-dot"></span> OPERATIONAL
+            </div>
+          </div>
+
+          <!-- App 1 Metrics Grid -->
+          <div class="metrics-row">
+            <div class="metric-item">
+              <span class="metric-label">CPU LOAD</span>
+              <span class="metric-val green" id="app1-cpu-val">24%</span>
+              <span class="metric-sub">4 vCPU Cores</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-label">MEMORY</span>
+              <span class="metric-val green" id="app1-mem-val">42%</span>
+              <span class="metric-sub">16 GiB Limit</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-label">LATENCY AVG</span>
+              <span class="metric-val green" id="app1-latency-val">45ms</span>
+              <span class="metric-sub">p95: 52ms</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-label">THROUGHPUT</span>
+              <span class="metric-val" id="app1-rps-val">420</span>
+              <span class="metric-sub">Req/sec</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-label">5XX ERRORS</span>
+              <span class="metric-val green" id="app1-error-val">0.1%</span>
+              <span class="metric-sub">HTTP Failures</span>
+            </div>
+          </div>
+        </article>
+
+        <!-- APPLICATION 2 CARD -->
+        <article class="app-card status-healthy" id="app2-card">
+          <div class="app-card-top">
+            <div class="app-identity">
+              <div class="app-name-row">
+                <h2 id="app2-title">Auth & Customer Portal</h2>
+                <span class="app-badge-code" id="app2-badge" style="color: var(--color-purple); border-color: rgba(184, 119, 217, 0.3); background-color: rgba(184, 119, 217, 0.15);">AUTH-PORTAL</span>
+              </div>
+              <p class="app-desc" id="app2-desc">OAuth2 authentication, user sessions & web portal</p>
+              <div class="app-host-info">
+                <span id="app2-host">srv-auth-portal-02.prod.internal</span>
+                <span id="app2-ip">10.240.18.91:443</span>
+              </div>
+            </div>
+            <div id="app2-status-badge" class="status-badge healthy">
+              <span class="pulse-dot"></span> OPERATIONAL
+            </div>
+          </div>
+
+          <!-- App 2 Metrics Grid -->
+          <div class="metrics-row">
+            <div class="metric-item">
+              <span class="metric-label">CPU LOAD</span>
+              <span class="metric-val green" id="app2-cpu-val">18%</span>
+              <span class="metric-sub">4 vCPU Cores</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-label">MEMORY</span>
+              <span class="metric-val green" id="app2-mem-val">38%</span>
+              <span class="metric-sub">16 GiB Limit</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-label">LATENCY AVG</span>
+              <span class="metric-val green" id="app2-latency-val">32ms</span>
+              <span class="metric-sub">p95: 39ms</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-label">THROUGHPUT</span>
+              <span class="metric-val" id="app2-rps-val">680</span>
+              <span class="metric-sub">Req/sec</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-label">5XX ERRORS</span>
+              <span class="metric-val green" id="app2-error-val">0.05%</span>
+              <span class="metric-sub">HTTP Failures</span>
+            </div>
+          </div>
+        </article>
+
+      </section>
+
+      <!-- ====================================================================
+           8 VISUAL PANELS GRID
+           ==================================================================== -->
+      <section class="charts-grid-8">
+
+        <!-- PANEL 1: Response Latency (ms) -->
+        <div class="panel-card">
+          <div class="panel-header">
+            <span class="panel-title">
+              <svg class="panel-title-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              Response Latency (ms)
+            </span>
+            <div class="panel-actions">
+              <span class="panel-badge">http_req_duration</span>
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="chart-latency"></canvas>
+          </div>
+        </div>
+
+        <!-- PANEL 2: CPU Utilization (%) -->
+        <div class="panel-card">
+          <div class="panel-header">
+            <span class="panel-title">
+              <svg class="panel-title-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>
+              CPU Utilization (%)
+            </span>
+            <div class="panel-actions">
+              <span class="panel-badge">node_cpu_total</span>
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="chart-cpu"></canvas>
+          </div>
+        </div>
+
+        <!-- PANEL 3: HTTP Status Codes Distribution (Bar Chart) -->
+        <div class="panel-card">
+          <div class="panel-header">
+            <span class="panel-title">
+              <svg class="panel-title-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="12" width="4" height="8"/><rect x="10" y="8" width="4" height="12"/><rect x="17" y="4" width="4" height="16"/></svg>
+              HTTP Status Breakdown
+            </span>
+            <div class="panel-actions">
+              <span class="panel-badge">2xx / 4xx / 5xx</span>
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="chart-status-bars"></canvas>
+          </div>
+        </div>
+
+        <!-- PANEL 4: Request Throughput (Req/sec) -->
+        <div class="panel-card">
+          <div class="panel-header">
+            <span class="panel-title">
+              <svg class="panel-title-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
+              Request Throughput (Req/s)
+            </span>
+            <div class="panel-actions">
+              <span class="panel-badge">rate(http_requests)</span>
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="chart-rps"></canvas>
+          </div>
+        </div>
+
+        <!-- PANEL 5: HTTP 5xx Error Rate (%) -->
+        <div class="panel-card">
+          <div class="panel-header">
+            <span class="panel-title">
+              <svg class="panel-title-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              HTTP 5xx Error Rate (%)
+            </span>
+            <div class="panel-actions">
+              <span class="panel-badge">Alert: &gt; 5%</span>
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="chart-errors"></canvas>
+          </div>
+        </div>
+
+        <!-- PANEL 6: Network I/O Bandwidth (MB/s) -->
+        <div class="panel-card">
+          <div class="panel-header">
+            <span class="panel-title">
+              <svg class="panel-title-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17l5-5 5 5M7 7l5 5 5-5"/></svg>
+              Network Bandwidth (MB/s)
+            </span>
+            <div class="panel-actions">
+              <span class="panel-badge">In / Out I/O</span>
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="chart-network"></canvas>
+          </div>
+        </div>
+
+        <!-- PANEL 7: Cluster Memory & Storage Fragmentation Map (Smart Defrag Style Canvas) -->
+        <div class="panel-card span-full">
+          <div class="panel-header">
+            <span class="panel-title">
+              <svg class="panel-title-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="6" height="6"/><rect x="15" y="3" width="6" height="6"/><rect x="9" y="9" width="6" height="6"/><rect x="3" y="15" width="6" height="6"/><rect x="15" y="15" width="6" height="6"/></svg>
+              Cluster Storage & Memory Allocation Map (Defrag Matrix)
+            </span>
+            <div class="panel-actions">
+              <span class="panel-badge">384 Cluster Blocks</span>
+            </div>
+          </div>
+          <div class="defrag-container">
+            <div class="defrag-stats-bar">
+              <div class="defrag-stat-item">
+                <span>Fragmentation Rate:</span>
+                <span id="defrag-frag-rate" class="defrag-stat-val" style="color: var(--color-green);">0.0%</span>
+              </div>
+              <div class="defrag-stat-item">
+                <span>Healthy:</span>
+                <span id="defrag-healthy-count" class="defrag-stat-val" style="color: var(--color-green);">--</span>
+              </div>
+              <div class="defrag-stat-item">
+                <span>Degraded:</span>
+                <span id="defrag-warn-count" class="defrag-stat-val" style="color: var(--color-orange);">0</span>
+              </div>
+              <div class="defrag-stat-item">
+                <span>Critical / Failed:</span>
+                <span id="defrag-crit-count" class="defrag-stat-val" style="color: var(--color-red);">0</span>
+              </div>
+            </div>
+
+            <div class="defrag-canvas-wrapper">
+              <canvas id="defrag-canvas"></canvas>
+            </div>
+
+            <div class="defrag-legend">
+              <div class="legend-item"><span class="legend-box" style="background:#2eb85c;"></span> Healthy</div>
+              <div class="legend-item"><span class="legend-box" style="background:#339af0;"></span> Cache</div>
+              <div class="legend-item"><span class="legend-box" style="background:#845ef7;"></span> Master</div>
+              <div class="legend-item"><span class="legend-box" style="background:#ff922b;"></span> Degraded</div>
+              <div class="legend-item"><span class="legend-box" style="background:#fa5252;"></span> Corrupted / Outage</div>
+              <div class="legend-item"><span class="legend-box" style="background:#1e2229; border: 1px solid #333;"></span> Idle</div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- Incident & Event Stream Table (Alertmanager) -->
+      <section class="incidents-card">
+        <div class="panel-header">
+          <span class="panel-title">
+            <svg class="panel-title-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            Prometheus Alertmanager & Incident Event Stream
+          </span>
+          <span class="panel-badge">Live Event Stream</span>
+        </div>
+        <div class="incidents-table-wrapper">
+          <table class="incidents-table">
+            <thead>
+              <tr>
+                <th style="width: 100px;">Timestamp</th>
+                <th style="width: 120px;">Severity</th>
+                <th style="width: 240px;">Workload</th>
+                <th>Incident Details</th>
+              </tr>
+            </thead>
+            <tbody id="incidents-tbody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+
+  </div>
+
+  <!-- Command Toast Pill -->
+  <div id="command-toast" class="hidden"></div>
+
+  <!-- Cheat Sheet Modal (Key '?') -->
+  <div id="cheat-modal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="6" y1="8" x2="6" y2="8"/><line x1="10" y1="8" x2="10" y2="8"/><line x1="14" y1="8" x2="14" y2="8"/><line x1="18" y1="8" x2="18" y2="8"/><line x1="6" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="18" y2="12"/><line x1="8" y1="16" x2="16" y2="16"/></svg>
+          Simulation Control Center & Shortcuts Guide
+        </h3>
+        <button id="modal-close" class="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="color: var(--text-secondary); font-size: 12px;">
+          Type the keyboard sequences directly on your keyboard at any time (no need to focus on any input):
+        </p>
+
+        <table class="shortcut-table">
+          <thead>
+            <tr style="text-align: left; color: var(--text-muted); font-size: 11px;">
+              <th>Shortcut</th>
+              <th>Simulation Effect</th>
+              <th>Quick Manual Test</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="shortcut-key">app1d</span></td>
+              <td>Degrade <strong>App 1</strong> to Amber/Warning Alert (Yellow/Orange)</td>
+              <td><button class="btn-action btn-warn" data-app="app1" data-action="WARNING">Simulate Warning</button></td>
+            </tr>
+            <tr>
+              <td><span class="shortcut-key">app1k</span></td>
+              <td>Kill <strong>App 1</strong> (Outage / Critical Red Alert)</td>
+              <td><button class="btn-action btn-crit" data-app="app1" data-action="CRITICAL">Simulate Kill</button></td>
+            </tr>
+            <tr>
+              <td><span class="shortcut-key">app1u</span></td>
+              <td>Restore <strong>App 1</strong> to Optimal Baseline (Green)</td>
+              <td><button class="btn-action btn-rest" data-app="app1" data-action="HEALTHY">Restore</button></td>
+            </tr>
+            <tr>
+              <td><span class="shortcut-key">app2d</span></td>
+              <td>Degrade <strong>App 2</strong> to Amber/Warning Alert (Yellow/Orange)</td>
+              <td><button class="btn-action btn-warn" data-app="app2" data-action="WARNING">Simulate Warning</button></td>
+            </tr>
+            <tr>
+              <td><span class="shortcut-key">app2k</span></td>
+              <td>Kill <strong>App 2</strong> (Outage / Critical Red Alert)</td>
+              <td><button class="btn-action btn-crit" data-app="app2" data-action="CRITICAL">Simulate Kill</button></td>
+            </tr>
+            <tr>
+              <td><span class="shortcut-key">app2u</span></td>
+              <td>Restore <strong>App 2</strong> to Optimal Baseline (Green)</td>
+              <td><button class="btn-action btn-rest" data-app="app2" data-action="HEALTHY">Restore</button></td>
+            </tr>
+            <tr>
+              <td><span class="shortcut-key">term</span> / <span class="shortcut-key">&grave;</span></td>
+              <td>Open / Close interactive CLI diagnostic console</td>
+              <td><button class="btn-action btn-warn" id="btn-open-term-modal" style="background: rgba(87, 148, 242, 0.2); color: #5794f2; border-color: rgba(87, 148, 242, 0.45);">Open CLI</button></td>
+            </tr>
+            <tr>
+              <td><span class="shortcut-key">?</span> / <span class="shortcut-key">Esc</span></td>
+              <td>Open / Close this cheat sheet guide</td>
+              <td>-</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div style="background: #121417; padding: 12px; border-radius: 4px; border: 1px solid var(--border-color); font-size: 11px; color: var(--text-muted);">
+          💡 <strong>Customization:</strong> To change application names or baseline settings, edit <code style="color: var(--color-yellow); font-family: var(--font-mono);">js/config.js</code> with any code editor.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Interactive CLI Console Modal -->
+  <div id="terminal-modal" class="modal-overlay">
+    <div class="terminal-card">
+      <div class="terminal-header">
+        <div class="terminal-traffic-lights">
+          <span class="light red" id="terminal-close-btn" title="Close console"></span>
+          <span class="light yellow"></span>
+          <span class="light green"></span>
+        </div>
+        <div class="terminal-title">operator@k8s-prod-bastion:~ (bash)</div>
+        <div class="terminal-actions">
+          <span class="terminal-badge">interactive v2.4</span>
+        </div>
+      </div>
+      <div class="terminal-body">
+        <div id="terminal-output" class="terminal-output">
+          <div class="term-line term-gray">Linux 6.1.0-prod-k8s x86_64 | GNU Bash 5.2.15(1)-release</div>
+          <div class="term-line term-gray">Type '<span class="term-yellow">help</span>' for available diagnostic & remediation commands.</div>
+        </div>
+        <div class="terminal-prompt-line">
+          <span class="term-prompt" id="terminal-prompt-prefix">operator@k8s-bastion:~$</span>
+          <input type="text" id="terminal-input" class="terminal-input" autocomplete="off" spellcheck="false" placeholder="Type command here (e.g. app1 status, app1 fix1)..." />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/vendor/chart.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/metricsEngine.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/keyboard.js"></script>
+  <script src="js/terminal.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
