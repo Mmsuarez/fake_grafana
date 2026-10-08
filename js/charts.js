@@ -174,30 +174,31 @@ class DashboardCharts {
         datasets: [
           {
             label: apps.app1.config.shortCode,
-            data: [apps.app1.current.http2xx, apps.app1.current.http4xx, apps.app1.current.http5xx],
-            backgroundColor: ["#73bf69", "#ff9830", "#f2495c"],
+            data: [apps.app1.current.http2xxPct, apps.app1.current.http4xxPct, apps.app1.current.http5xxPct],
+            backgroundColor: ["#2eb85c", "#ff922b", "#fa5252"],
             borderWidth: 0,
-            borderRadius: 3
+            borderRadius: 4
           },
           {
             label: apps.app2.config.shortCode,
-            data: [apps.app2.current.http2xx, apps.app2.current.http4xx, apps.app2.current.http5xx],
-            backgroundColor: ["#378635", "#d67c1e", "#ba2839"],
+            data: [apps.app2.current.http2xxPct, apps.app2.current.http4xxPct, apps.app2.current.http5xxPct],
+            backgroundColor: ["#20c997", "#f59f00", "#e03131"],
             borderWidth: 0,
-            borderRadius: 3
+            borderRadius: 4
           }
         ]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        animation: { duration: 300 },
+        animation: { duration: 400 },
         scales: {
           x: { grid: { display: false } },
           y: {
             grid: { color: "rgba(255, 255, 255, 0.05)" },
-            ticks: { callback: (val) => `${val} req` },
-            suggestedMin: 0
+            min: 0,
+            max: 100,
+            ticks: { callback: (val) => `${val}%` }
           }
         }
       }
@@ -505,19 +506,19 @@ class DashboardCharts {
       this.charts.cpu.update("none");
     }
 
-    // Update Panel 3: HTTP Status Bars
+    // Update Panel 3: HTTP Status Bars (% Ratio with smooth animation)
     if (this.charts.statusBars) {
       this.charts.statusBars.data.datasets[0].data = [
-        apps.app1.current.http2xx,
-        apps.app1.current.http4xx,
-        apps.app1.current.http5xx
+        apps.app1.current.http2xxPct,
+        apps.app1.current.http4xxPct,
+        apps.app1.current.http5xxPct
       ];
       this.charts.statusBars.data.datasets[1].data = [
-        apps.app2.current.http2xx,
-        apps.app2.current.http4xx,
-        apps.app2.current.http5xx
+        apps.app2.current.http2xxPct,
+        apps.app2.current.http4xxPct,
+        apps.app2.current.http5xxPct
       ];
-      this.charts.statusBars.update("none");
+      this.charts.statusBars.update();
     }
 
     // Update Panel 4: RPS

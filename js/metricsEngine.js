@@ -70,10 +70,10 @@ class MetricsEngine {
         netIn: base.netIn,
         netOut: base.netOut,
         sloScore: base.sloScore,
-        // Status codes breakdown
-        http2xx: Math.round(base.rps * 0.98),
-        http4xx: Math.round(base.rps * 0.019),
-        http5xx: Math.round(base.rps * 0.001)
+        // Status codes breakdown (% ratio of total traffic)
+        http2xxPct: 98.6,
+        http4xxPct: 1.2,
+        http5xxPct: 0.2
       },
       target: {
         cpu: base.cpu,
@@ -84,9 +84,9 @@ class MetricsEngine {
         netIn: base.netIn,
         netOut: base.netOut,
         sloScore: base.sloScore,
-        http2xx: Math.round(base.rps * 0.98),
-        http4xx: Math.round(base.rps * 0.019),
-        http5xx: Math.round(base.rps * 0.001)
+        http2xxPct: 98.6,
+        http4xxPct: 1.2,
+        http5xxPct: 0.2
       },
       history: {
         timestamps,
@@ -150,9 +150,9 @@ class MetricsEngine {
       app.target.netIn = base.netIn;
       app.target.netOut = base.netOut;
       app.target.sloScore = 99.98;
-      app.target.http2xx = Math.round(base.rps * 0.98);
-      app.target.http4xx = Math.round(base.rps * 0.018);
-      app.target.http5xx = Math.round(base.rps * 0.002);
+      app.target.http2xxPct = 98.6;
+      app.target.http4xxPct = 1.2;
+      app.target.http5xxPct = 0.2;
 
       this._addIncident({
         appId: app.config.id,
@@ -169,9 +169,9 @@ class MetricsEngine {
       app.target.netIn = +(base.netIn * 1.5).toFixed(1);
       app.target.netOut = +(base.netOut * 0.7).toFixed(1);
       app.target.sloScore = 84.5;
-      app.target.http2xx = Math.round(app.target.rps * 0.88);
-      app.target.http4xx = Math.round(app.target.rps * 0.06);
-      app.target.http5xx = Math.round(app.target.rps * 0.06);
+      app.target.http2xxPct = 68.0;
+      app.target.http4xxPct = 14.5;
+      app.target.http5xxPct = 17.5;
 
       this._addIncident({
         appId: app.config.id,
@@ -188,9 +188,9 @@ class MetricsEngine {
       app.target.netIn = +(base.netIn * 0.15).toFixed(1);
       app.target.netOut = +(base.netOut * 0.12).toFixed(1);
       app.target.sloScore = 28.3;
-      app.target.http2xx = Math.round(app.target.rps * 0.25);
-      app.target.http4xx = Math.round(app.target.rps * 0.15);
-      app.target.http5xx = Math.round(app.target.rps * 0.60);
+      app.target.http2xxPct = 14.0;
+      app.target.http4xxPct = 24.0;
+      app.target.http5xxPct = 62.0;
 
       this._addIncident({
         appId: app.config.id,
@@ -230,9 +230,14 @@ class MetricsEngine {
       app.current.netOut = Math.max(0.1, +(app.current.netOut + (app.target.netOut - app.current.netOut) * lerp + (Math.random() - 0.5) * 4).toFixed(1));
       app.current.sloScore = Math.max(5, Math.min(100, +(app.current.sloScore + (app.target.sloScore - app.current.sloScore) * lerp).toFixed(2)));
 
-      app.current.http2xx = Math.max(0, Math.round(app.current.http2xx + (app.target.http2xx - app.current.http2xx) * lerp));
-      app.current.http4xx = Math.max(0, Math.round(app.current.http4xx + (app.target.http4xx - app.current.http4xx) * lerp));
-      app.current.http5xx = Math.max(0, Math.round(app.current.http5xx + (app.target.http5xx - app.current.http5xx) * lerp));
+      // Dynamic live movement for HTTP status distribution bars with organic jitter
+      const jitterHttp2xx = (Math.random() - 0.5) * 1.8;
+      const jitterHttp4xx = (Math.random() - 0.5) * 0.8;
+      const jitterHttp5xx = (Math.random() - 0.5) * 1.2;
+
+      app.current.http2xxPct = Math.max(1, Math.min(100, +(app.current.http2xxPct + (app.target.http2xxPct - app.current.http2xxPct) * lerp + jitterHttp2xx).toFixed(1)));
+      app.current.http4xxPct = Math.max(0.5, Math.min(100, +(app.current.http4xxPct + (app.target.http4xxPct - app.current.http4xxPct) * lerp + jitterHttp4xx).toFixed(1)));
+      app.current.http5xxPct = Math.max(0.1, Math.min(100, +(app.current.http5xxPct + (app.target.http5xxPct - app.current.http5xxPct) * lerp + jitterHttp5xx).toFixed(1)));
 
       // Update time-series history
       app.history.timestamps.push(timeStr);
